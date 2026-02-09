@@ -1,16 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BAWBAG.BIZ</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  <!DOCTYPE html>
-  <html lang="en">
-    <head>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>Bawbag.biz</title>
-      <script type="module" crossorigin src="/assets/index-BBoBUZHh.js"></script>
-      <link rel="stylesheet" crossorigin href="/assets/index-CeOyQGWE.css">
-    </head>
+      body {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        background: #000;
+      }
 
-    <body>
-      <div id="root"></div>
-    </body>
-  </html>
-  
+      .tartan {
+        position: absolute;
+        top: -50%; left: -50%;
+        width: 200%; height: 200%;
+        background: url('assets/tartan.png') repeat;
+        background-size: auto;
+        transform: rotate(-53deg) scale(2);
+        transform-origin: center;
+      }
+
+      .overlay-dark {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.47);
+      }
+
+      .overlay-red {
+        position: absolute;
+        inset: 0;
+        background: rgba(207, 0, 0, 0.77);
+        mix-blend-mode: overlay;
+      }
+
+      h1 {
+        position: relative;
+        z-index: 10;
+        color: #fff;
+        font: 700 6rem/1 ui-serif, Georgia, 'Times New Roman', serif;
+      }
+
+      @media (max-width: 480px) {
+        h1 { font-size: 3.5rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="tartan"></div>
+    <div class="overlay-dark"></div>
+    <div class="overlay-red"></div>
+    <h1>no' yet</h1>
+  </body>
+</html>
