@@ -872,16 +872,189 @@
                 min-width: 60px;
             }
         }
+        /* Password Gate */
+        .password-gate {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .password-gate .tartan-bg {
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background-image: var(--tartan-bg);
+            background-repeat: repeat;
+            background-size: auto;
+            transform: rotate(-53deg) scale(2);
+            transform-origin: center;
+        }
+
+        .password-gate .overlay-dark {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.47);
+        }
+
+        .password-gate .overlay-red {
+            position: absolute;
+            inset: 0;
+            background: rgba(207, 0, 0, 0.77);
+            mix-blend-mode: overlay;
+        }
+
+        .password-form {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .password-form h1 {
+            color: #fff;
+            font: 700 3rem/1 Georgia, 'Times New Roman', serif;
+            margin-bottom: 0.5rem;
+        }
+
+        .password-form p {
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .password-form input {
+            padding: 0.75rem 1.25rem;
+            font-size: 1rem;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 6px;
+            background: rgba(0,0,0,0.5);
+            color: #fff;
+            outline: none;
+            width: 240px;
+            text-align: center;
+        }
+
+        .password-form input:focus {
+            border-color: #CF0000;
+        }
+
+        .password-form input::placeholder {
+            color: rgba(255,255,255,0.4);
+        }
+
+        .password-form button {
+            margin-left: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            background: #CF0000;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .password-form button:hover {
+            background: #ff3333;
+        }
+
+        .password-form .error-msg {
+            color: #ff6666;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        #app-content { display: none; }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <!-- Password Gate -->
+    <div id="password-gate" class="password-gate">
+        <div class="tartan-bg"></div>
+        <div class="overlay-dark"></div>
+        <div class="overlay-red"></div>
+        <div class="password-form">
+            <h1>BAWBAG.BIZ</h1>
+            <p>Preview access only</p>
+            <div>
+                <input type="password" id="pw-input" placeholder="Enter password" autofocus />
+                <button onclick="checkPassword()">Enter</button>
+            </div>
+            <div id="pw-error" class="error-msg"></div>
+        </div>
+    </div>
 
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <!-- Main App (hidden until authenticated) -->
+    <div id="app-content">
+        <div id="root"></div>
+    </div>
 
-    <script type="text/babel">
+    <script>
+        const HASH = '1d63cfe1ad498c0d76070b7c94cc25dfc134cf3cd47674d7a5ecaeb8b4be493a';
+
+        async function sha256(str) {
+            const buf = await crypto.subtle.digest('SHA-256',
+                new TextEncoder().encode(str));
+            return Array.from(new Uint8Array(buf))
+                .map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function checkPassword() {
+            const input = document.getElementById('pw-input').value;
+            const hash = await sha256(input);
+            if (hash === HASH) {
+                sessionStorage.setItem('bawbag-auth', 'true');
+                unlock();
+            } else {
+                document.getElementById('pw-error').textContent = "Nah, that's no' it.";
+            }
+        }
+
+        function unlock() {
+            document.getElementById('password-gate').style.display = 'none';
+            document.getElementById('app-content').style.display = 'block';
+            loadApp();
+        }
+
+        function loadApp() {
+            // Load React + Babel only after authentication
+            const scripts = [
+                'https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js'
+            ];
+            let loaded = 0;
+            scripts.forEach(src => {
+                const s = document.createElement('script');
+                s.src = src;
+                s.crossOrigin = 'anonymous';
+                s.onload = () => { if (++loaded === scripts.length) runApp(); };
+                document.head.appendChild(s);
+            });
+        }
+
+        function runApp() {
+            const appScript = document.getElementById('app-script');
+            const s = document.createElement('script');
+            s.type = 'text/babel';
+            s.textContent = appScript.textContent;
+            document.body.appendChild(s);
+        }
+
+        // Allow Enter key to submit
+        document.getElementById('pw-input').addEventListener('keydown', e => {
+            if (e.key === 'Enter') checkPassword();
+        });
+
+        // Check if already authenticated this session
+        if (sessionStorage.getItem('bawbag-auth') === 'true') unlock();
+    </script>
+
+    <script type="text/plain" id="app-script">
         const { useState, useEffect } = React;
 
         // Product Data
