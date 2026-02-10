@@ -1039,9 +1039,10 @@
 
         function runApp() {
             const appScript = document.getElementById('app-script');
+            const code = appScript.textContent;
+            const transformed = Babel.transform(code, { presets: ['react'] }).code;
             const s = document.createElement('script');
-            s.type = 'text/babel';
-            s.textContent = appScript.textContent;
+            s.textContent = transformed;
             document.body.appendChild(s);
         }
 
